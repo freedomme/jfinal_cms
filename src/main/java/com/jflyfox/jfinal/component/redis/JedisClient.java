@@ -17,14 +17,14 @@ import com.jflyfox.util.serializable.SerializerManage;
 
 /**
  * redis客户端
- * 
+ *
  * 2016年5月10日 下午2:34:30 flyfox 330627517@qq.com
  */
 public class JedisClient {
 
 	private static Log logger = Log.getLog(JedisClient.class);
 
-	private static JedisClient instance = null;
+	private static volatile JedisClient instance = null;
 
 	public static JedisClient getInstance() {
 		if (instance == null) {
@@ -59,13 +59,13 @@ public class JedisClient {
 			pool = new JedisPool(config, host, port, poolTimeWait, password);
 		}
 	}
-	
+
 	public Long expire(String key, int seconds) {
 		try (Jedis jedis = pool.getResource()) {
 			return jedis.expire(key, seconds);
 		}
 	}
-	
+
 	public Long ttl(String key) {
 		try (Jedis jedis = pool.getResource()) {
 			return jedis.ttl(key);
@@ -113,13 +113,13 @@ public class JedisClient {
 			return jedis.setnx(key, "setnx") == 1;
 		}
 	}
-	
+
 	public long setnx(String key, String val) {
 		try (Jedis jedis = pool.getResource()) {
 			return jedis.setnx(key, val);
 		}
 	}
-	
+
 	public Long incr(String key) {
 		try (Jedis jedis = pool.getResource()) {
 			return jedis.incr(key);
@@ -210,7 +210,7 @@ public class JedisClient {
 
 	/**
 	 * 移除给定的key
-	 * 
+	 *
 	 * @param key
 	 */
 	public void del(String key) {
@@ -218,10 +218,10 @@ public class JedisClient {
 			jedis.del(key);
 		}
 	}
-	
+
 	/**
 	 * 移除给定的key
-	 * 
+	 *
 	 * @param key
 	 */
 	public void del(byte[] key) {
@@ -235,16 +235,16 @@ public class JedisClient {
 			jedis.flushAll();
 		}
 	}
-	
+
 	public long dbSize() {
 		try (Jedis jedis = pool.getResource()) {
 			return jedis.dbSize();
 		}
 	}
-	
+
 	/**
 	 * 移除给定key的生存时间 将这个 key 从『易失的』(带生存时间 key )转换成『持久的』(一个不带生存时间、永不过期的 key )
-	 * 
+	 *
 	 * @param key
 	 */
 	public void persist(String key) {
@@ -255,7 +255,7 @@ public class JedisClient {
 
 	/**
 	 * 批量将值插入sorted sets中，如果member对应的value不存在，则初始化，否则更新此member对应value
-	 * 
+	 *
 	 * @param key
 	 *            jedis中key
 	 * @param scoreMembers
@@ -283,7 +283,7 @@ public class JedisClient {
 	 * 如果某个member已经是有序集的成员，那么更新这个member的score值
 	 * ，并通过重新插入这个member元素，来保证该member在正确的位置上。 score值可以是整数值或双精度浮点数。
 	 * 如果key不存在，则创建一个空的有序集并执行ZADD操作。 当key存在但不是有序集类型时，返回一个错误。
-	 * 
+	 *
 	 * @param key
 	 *            jedis中对应的key
 	 * @param score
@@ -303,7 +303,7 @@ public class JedisClient {
 	 * 如果某个member已经是有序集的成员，那么更新这个member的score值
 	 * ，并通过重新插入这个member元素，来保证该member在正确的位置上。 score值可以是整数值或双精度浮点数。
 	 * 如果key不存在，则创建一个空的有序集并执行ZADD操作。 当key存在但不是有序集类型时，返回一个错误。
-	 * 
+	 *
 	 * @param key
 	 *            jedis中对应的key
 	 * @param score
@@ -316,14 +316,14 @@ public class JedisClient {
 			jedis.zadd(key, score, member);
 		}
 	}
-	
+
 	/**
 	 * 返回升序排名的用户名和分数的集合,即分数从最低到最高的排列，分数相等的两个member根据字典排序顺序返回。
 	 * 如果要获取降序排列，请使用Zrevrange接口。 start和stop的名次都是基于0的，也就是0是第一个元素，1是第二个元素，以此类推。
 	 * 他们也可以是负数，表示从sorted set最后开始定位，-1表示最后一个元素，-2表示倒数第二个，以此类推
 	 * 假如说越界了，不会产生错误。如果开始位（start）比整个sorted set都大，或者start大于stop，那么会返回一个空的list。
 	 * 如果stop比真个sorted sets都大，redis会把stop认为是此sorted set中的最后一个元素。
-	 * 
+	 *
 	 * @param key
 	 *            jedis中对应的key
 	 * @param start
@@ -341,7 +341,7 @@ public class JedisClient {
 	 * 返回mem对应的排名(从低到高排名，假如这个哥们分数最低，则返回的是0而不是1) 假如需要获取分数从大到小的排名，请使用方法ZREVRANK
 	 * 假如对应member的在sorted set中存在，返回对应的rank。 如果member不存在，或者key对应的sorted
 	 * set不存在，返回null
-	 * 
+	 *
 	 * @param key
 	 * @param member
 	 */
@@ -356,7 +356,7 @@ public class JedisClient {
 	 * 返回mem对应的排名(从高到低排名，假如这个哥们分数最高，则返回的是0而不是1) 假如需要获取分数从小到大的排名，请使用方法ZRANK
 	 * 假如对应member的在sorted set中存在，返回对应的rank。 如果member不存在，或者key对应的sorted
 	 * set不存在，返回null
-	 * 
+	 *
 	 * @param key
 	 * @param member
 	 * @return
@@ -374,7 +374,7 @@ public class JedisClient {
 	 * 他们也可以是负数，表示从sorted set最后开始定位，-1表示最后一个元素，-2表示倒数第二个，以此类推
 	 * 假如说越界了，不会产生错误。如果开始位（start）比整个sorted set都大，或者start大于stop，那么会返回一个空的list。
 	 * 如果stop比真个sorted sets都大，redis会把stop认为是此sorted set中的最后一个元素，即分数最低的元素。
-	 * 
+	 *
 	 * @param key
 	 * @param start
 	 * @param stop
@@ -389,7 +389,7 @@ public class JedisClient {
 
 	/**
 	 * 返回指定member对应的分数 如果member不存在，或者key对应的sorted set不存在，则返回null
-	 * 
+	 *
 	 * @param key
 	 * @param member
 	 * @return
@@ -404,9 +404,9 @@ public class JedisClient {
 	/**
 	 * 删除key对应的sorted set中的指定members, 如果member不存在,则不进行任何操作,
 	 * 如果key所对应value不是set,返回错误<br>
-	 * 
+	 *
 	 * 返回：实际删除的member个数.P.S:1表示member被删除;0表示member不存在
-	 * 
+	 *
 	 * @param key
 	 * @param member
 	 * @return
@@ -420,7 +420,7 @@ public class JedisClient {
 	/**
 	 * 删除指定key的sorted set中rank位于start和end之间的所有元素.start和end都是基于0的数字,其中rank=0
 	 * 是最低的分数. start和end都可以为负数,表示从最高rank起始的元素,例如:-1为最高分,-2为第二高分等.返回删除元素的个数.
-	 * 
+	 *
 	 * @param key
 	 * @param start
 	 * @param end
@@ -435,10 +435,10 @@ public class JedisClient {
 	/**
 	 * 向存于 key 的列表的尾部插入所有指定的值。 如果 key 不存在，那么会创建一个空的列表然后再进行 push 操作。 当 key
 	 * 保存的不是一个列表，那么会返回一个错误。
-	 * 
+	 *
 	 * 可以使用一个命令把多个元素打入队列，只需要在命令后面指定多个参数。 元素是从左到右一个接一个从列表尾部插入。 比如命令 RPUSH mylist
 	 * a b c 会返回一个列表，其第一个元素是 a ，第二个元素是 b ，第三个元素是 c。
-	 * 
+	 *
 	 * @param key
 	 * @param values
 	 * @return
@@ -453,7 +453,7 @@ public class JedisClient {
 	 * 返回存储在 key 的列表里指定范围内的元素。 start 和 end
 	 * 偏移量都是基于0的下标，即list的第一个元素下标是0（list的表头），第二个元素下标是1，以此类推。
 	 * 偏移量也可以是负数，表示偏移量是从list尾部开始计数。 例如， -1 表示列表的最后一个元素，-2 是倒数第二个，以此类推。
-	 * 
+	 *
 	 * @param key
 	 * @param start
 	 * @param end
@@ -468,9 +468,9 @@ public class JedisClient {
 	/**
 	 * 修剪(trim)一个已存在的 list，这样 list 就会只包含指定范围的指定元素。 start 和 stop 都是由0开始计数的， 这里的 0
 	 * 是列表里的第一个元素（表头），1 是第二个元素，以此类推。
-	 * 
+	 *
 	 * 例如： LTRIM foobar 0 2 将会对存储在 foobar 的列表进行修剪，只保留列表里的前3个元素。
-	 * 
+	 *
 	 * @param key
 	 * @param start
 	 * @param end
@@ -485,7 +485,7 @@ public class JedisClient {
 	/**
 	 * 返回存储在 key 里的list的长度。 如果 key 不存在，那么就被看作是空list，并且返回长度为 0。 当存储在 key
 	 * 里的值不是一个list的话，会返回error。
-	 * 
+	 *
 	 * @param key
 	 * @return
 	 */
@@ -500,9 +500,9 @@ public class JedisClient {
 	 * 如果key中不存在member，就在key中添加一个member，score是increment（就好像它之前的score是0.0）。
 	 * 如果key不存在，就创建一个只含有指定member成员的有序集合。
 	 * score值必须是字符串表示的整数值或双精度浮点数，并且能接受double精度的浮点数。也有可能给一个负数来减少score的值。
-	 * 
+	 *
 	 * 当key不是有序集类型时，返回一个错误。
-	 * 
+	 *
 	 * @param key
 	 * @param score
 	 * @param member
@@ -527,7 +527,7 @@ public class JedisClient {
 			return jedis.mget(keys);
 		}
 	}
-	
+
 	public String hget(String key, String field) {
 		try (Jedis jedis = pool.getResource()) {
 			return jedis.hget(key, field);
@@ -551,13 +551,13 @@ public class JedisClient {
 			return jedis.mget(keys);
 		}
 	}
-	
+
 	public Map<byte[], byte[]> hgetAll(byte[] key) {
 		try (Jedis jedis = pool.getResource()) {
 			return jedis.hgetAll(key);
 		}
 	}
-	
+
 	public byte[] hget(byte[] key, byte[] field) {
 		try (Jedis jedis = pool.getResource()) {
 			return jedis.hget(key, field);
@@ -575,7 +575,7 @@ public class JedisClient {
 			return jedis.hdel(key, field);
 		}
 	}
-	
+
 	///////////////////////// hashmap object //////////////////////////////
 	@SuppressWarnings("unchecked")
 	public <T> Map<String, T> hgetAllObj(String key) {
@@ -602,7 +602,7 @@ public class JedisClient {
 
 		return mapObj;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <T> T hgetObj(String key, String field) {
 		byte[] vals = null;
@@ -634,7 +634,7 @@ public class JedisClient {
 		if (vals == null) {
 			return null;
 		}
-		
+
 		try (Jedis jedis = pool.getResource()) {
 			return jedis.hset(SafeEncoder.encode(key), SafeEncoder.encode(field), vals);
 		}
@@ -645,10 +645,10 @@ public class JedisClient {
 			return jedis.hdel(SafeEncoder.encode(key), SafeEncoder.encode(field));
 		}
 	}
-	
+
 	/**
 	 * 获取数量
-	 * 
+	 *
 	 * @param key
 	 */
 	public long hlenObj(String key) {
@@ -656,10 +656,10 @@ public class JedisClient {
 			return jedis.hlen(SafeEncoder.encode(key));
 		}
 	}
-	
+
 	/**
 	 * 移除hashmap所有Key
-	 * 
+	 *
 	 * @param key
 	 */
 	public void hdelObjAll(String key) {
@@ -667,5 +667,5 @@ public class JedisClient {
 			jedis.del(SafeEncoder.encode(key));
 		}
 	}
-	
+
 }
